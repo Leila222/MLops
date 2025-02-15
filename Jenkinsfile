@@ -64,7 +64,7 @@ pipeline {
                 expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Deploy API' }
             }
             steps {
-                sh '. ${VENV_DIR}/bin/activate && python app.py &'
+                sh '. ${VENV_DIR}/bin/activate && python app.py'
             }
         }
     }
