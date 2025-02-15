@@ -43,7 +43,7 @@ pipeline {
 
         stage('Deploy API') {
             steps {
-                sh '. ${VENV_DIR}/bin/activate && python app.py' 
+                sh '. ${VENV_DIR}/bin/activate && python app.py &' 
             }
         }
     }
