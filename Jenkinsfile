@@ -25,25 +25,25 @@ pipeline {
 
         stage('Prepare Data') {
             steps {
-                sh 'source ${VENV_DIR}/bin/activate && python main.py --prepare --train_path ${TRAIN_PATH} --test_path ${TEST_PATH}'
+                sh '. ${VENV_DIR}/bin/activate && python main.py --prepare --train_path ${TRAIN_PATH} --test_path ${TEST_PATH}'
             }
         }
 
         stage('Train Model') {
             steps {
-                sh 'source ${VENV_DIR}/bin/activate && python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH}'
+                sh '. ${VENV_DIR}/bin/activate && python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH}'
             }
         }
 
         stage('Evaluate Model') {
             steps {
-                sh 'source ${VENV_DIR}/bin/activate && python main.py --evaluate --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH}'
+                sh '. ${VENV_DIR}/bin/activate && python main.py --evaluate --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH}'
             }
         }
 
         stage('Deploy API') {
             steps {
-                sh 'source ${VENV_DIR}/bin/activate && python app.py' 
+                sh '. ${VENV_DIR}/bin/activate && python app.py' 
             }
         }
     }
