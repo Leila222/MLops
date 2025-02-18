@@ -85,12 +85,10 @@ def cap_outliers(data, col_num):
 
 
 def prepare_data(train_path, test_path, output_dir="data", drop_columns=None, p_value_threshold=0.05):
-    # Check if preprocessed data exists
     preprocessed_data = load_preprocessed_data(output_dir)
     if preprocessed_data:
-        return preprocessed_data  # Return loaded preprocessed data
+        return preprocessed_data  
 
-    # Otherwise, run the data preparation process
     train_data = pd.read_csv(train_path)
     test_data = pd.read_csv(test_path)
 
@@ -174,18 +172,19 @@ def train_model(X_train_st, y_train):
         "min_child_weight": [1, 3, 5],
     }
 
-    xgb_model = xgb.XGBClassifier(random_state=42)
+    with mlflow.start_run():
+        xgb_model = xgb.XGBClassifier(random_state=42)
 
-    random_search = RandomizedSearchCV(
-        estimator=xgb_model,
-        param_distributions=param_dist,
-        n_iter=100,
-        scoring="f1",
-        cv=3,
-        verbose=1,
-        random_state=42,
-        n_jobs=-1,
-    )
+        random_search = RandomizedSearchCV(
+            estimator=xgb_model,
+            param_distributions=param_dist,
+            n_iter=100,
+            scoring="f1",
+            cv=3,
+            verbose=1,
+            random_state=42,
+            n_jobs=-1,
+        )
 
     random_search.fit(X_train_st, y_train)
 
@@ -194,6 +193,10 @@ def train_model(X_train_st, y_train):
     tuned_xgb_model = xgb.XGBClassifier(**best_params_random, random_state=42)
 
     tuned_xgb_model.fit(X_train_st, y_train)
+    
+    mlflow.log_params(best_params_random)
+
+    mlflow.sklearn.log_model(tuned_xgb_model, "model")
 
     print("Training phase of the model executed successfully!")
 
@@ -210,6 +213,12 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
     test_recall = recall_score(y_test, y_test_pred, average="binary")
     test_f1 = f1_score(y_test, y_test_pred, average="binary")
 
+    with mlflow.start_run():
+        mlflow.log_metric("accuracy", test_accuracy)
+        mlflow.log_metric("precision", test_precision)
+        mlflow.log_metric("recall", test_recall)
+        mlflow.log_metric("f1_score", test_f1)
+        
     print("\nTest Metrics for XGBoost After Tuning:")
     print(f"Accuracy: {test_accuracy:.5f}")
     print(f"Precision: {test_precision:.5f}")
