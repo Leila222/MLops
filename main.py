@@ -1,6 +1,9 @@
 import argparse
 import pandas as pd
 import shap
+import mlflow
+import mlflow.sklearn
+
 from model_pipeline import (
     prepare_data,
     train_model,
