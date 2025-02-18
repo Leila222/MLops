@@ -30,6 +30,10 @@ import os
 import shap
 
 
+mlflow.set_tracking_uri(uri="http://localhost:5001")
+
+mlflow.set_experiment("MLflow")
+
 def save_preprocessed_data(X_train, X_test, y_train, y_test, scaler, output_dir="data"):
     os.makedirs(output_dir, exist_ok=True)
     joblib.dump(X_train, os.path.join(output_dir, "X_train.pkl"))
