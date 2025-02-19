@@ -173,7 +173,7 @@ def train_model(X_train_st, y_train):
         "min_child_weight": [1, 3, 5],
     }
 
-    with mlflow.start_run():
+    with mlflow.start_run(run_name="Training the model"):
         xgb_model = xgb.XGBClassifier(random_state=42)
 
         random_search = RandomizedSearchCV(
@@ -214,7 +214,7 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
     test_recall = recall_score(y_test, y_test_pred, average="binary")
     test_f1 = f1_score(y_test, y_test_pred, average="binary")
 
-    with mlflow.start_run():
+    with mlflow.start_run(run_name="Evaluating the model"):
         mlflow.log_metric("accuracy", test_accuracy)
         mlflow.log_metric("precision", test_precision)
         mlflow.log_metric("recall", test_recall)
