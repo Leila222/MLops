@@ -68,6 +68,24 @@ pipeline {
             }
         }
 
+        stage('Retrain Model') {
+            when {
+                expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Retrain Model' }
+            }
+            steps {
+                sh '''
+                . ${VENV_DIR}/bin/activate 
+                if [ -f ${MODEL_PATH} ]; then
+                    echo "Existing model found, retraining..."
+                    python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH}
+                else
+                    echo "No model found, training a new model..."
+                    python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH}
+                fi
+                '''
+            }
+        }
+        
         stage('Deploy API') {
             when {
                 expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Deploy API' }
