@@ -31,6 +31,15 @@ pipeline {
                 sh '. ${VENV_DIR}/bin/activate && pip install -r requirements.txt'
             }
         }
+        
+        stage('Deploy API') {
+            when {
+                expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Run MLflow' }
+            }
+            steps {
+                sh '. ${VENV_DIR}/bin/activate && mlflow ui --backend-store-uri sqlite:///mlflow.db --host 0.0.0.0 --port 5001 &'
+            }
+        }
 
         stage('Prepare Data') {
             when {
