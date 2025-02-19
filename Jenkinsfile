@@ -32,7 +32,7 @@ pipeline {
             }
         }
         
-        stage('Deploy API') {
+        stage('Run MLflow') {
             when {
                 expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Run MLflow' }
             }
