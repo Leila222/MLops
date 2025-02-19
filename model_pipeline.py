@@ -234,7 +234,53 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
         "f1_score": test_f1,
     }
 
+def retrain_model(X_train, X_test, y_train, y_test, params, model_path="xgb_retrained.pkl"):
+    """
+    Retrains the XGBoost model with given hyperparameters, saves it, and logs results in MLflow.
 
+    Args:
+        X_train (pd.DataFrame): Training features.
+        X_test (pd.DataFrame): Testing features.
+        y_train (pd.Series): Training labels.
+        y_test (pd.Series): Testing labels.
+        params (dict): Hyperparameters for model training.
+        model_path (str): Path to save the trained model.
+
+    Returns:
+        tuple: (Trained model, best parameters, evaluation metrics)
+    """
+
+    with mlflow.start_run(run_name="Retraining the model"):
+        model = xgb.XGBClassifier(**params, random_state=42)
+
+        model.fit(X_train, y_train)
+
+        joblib.dump(model, model_path)
+        print(f"Retrained model saved to {model_path}")
+
+        mlflow.log_params(params)
+        mlflow.sklearn.log_model(model, "retrained_model")
+
+        y_train_pred = model.predict(X_train)
+        y_test_pred = model.predict(X_test)
+
+        metrics = {
+            "accuracy": accuracy_score(y_test, y_test_pred),
+            "precision": precision_score(y_test, y_test_pred, average="binary"),
+            "recall": recall_score(y_test, y_test_pred, average="binary"),
+            "f1_score": f1_score(y_test, y_test_pred, average="binary"),
+        }
+
+        mlflow.log_metrics(metrics)
+
+        print("\nEvaluation Metrics for Retrained Model:")
+        for metric, value in metrics.items():
+            print(f"{metric.capitalize()}: {value:.5f}")
+
+        print("Retraining and evaluation completed successfully!")
+
+    return model, params, metrics
+    
 def save_model(model, filename):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     joblib.dump(model, filename)
