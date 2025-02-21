@@ -6,6 +6,7 @@ pipeline {
         TRAIN_PATH = "data/train.csv"
         TEST_PATH = "data/test.csv"
         MODEL_PATH = "models/xgboost_model.pkl"
+        MODEL_PATH_Retrain = "models/xgboost_retrained.pkl"
     }
 
     parameters {
@@ -75,12 +76,12 @@ pipeline {
             steps {
                 sh '''
                 . ${VENV_DIR}/bin/activate 
-                if [ -f ${MODEL_PATH} ]; then
+                if [ -f ${MODEL_PATH_Retrain} ]; then
                     echo "Existing model found, retraining..."
-                    python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH}
+                    python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH_Retrain}
                 else
                     echo "No model found, training a new model..."
-                    python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH}
+                    python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH_Retrain}
                 fi
                 '''
             }
