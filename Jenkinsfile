@@ -77,7 +77,7 @@ pipeline {
 		sh '''
 		. ${VENV_DIR}/bin/activate 
 		echo "Retraining model..."
-		python main.py --retrain --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${RETRAINED_MODEL_PATH}
+		python main.py --retrain --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${RETRAINED_MODEL_PATH} --params '${HYPERPARAMS}'
 		'''
 	    }
 	}
