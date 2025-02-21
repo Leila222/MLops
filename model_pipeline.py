@@ -260,7 +260,7 @@ def retrain_model(X_train, X_test, y_train, y_test, params, retrained_model_path
         model.fit(X_train, y_train)
 
         save_model(model, retrained_model_path)
-        print(f"Retrained model saved to {model_path}")
+        print(f"Retrained model saved to {retrained_model_path}")
 
         mlflow.log_params(params)
         mlflow.sklearn.log_model(model, "retrained_model")
