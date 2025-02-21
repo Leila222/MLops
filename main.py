@@ -27,6 +27,7 @@ def main():
     parser.add_argument('--train_path', type=str, help='Path to the training dataset', required=True)
     parser.add_argument('--test_path', type=str, help='Path to the test dataset', required=True)
     parser.add_argument('--model_path', type=str, help='Path to save/load the model', default="models/xgboost_model.pkl")
+    parser.add_argument('--retrained_model_path', type=str, help='Path to save/load the model', default="models/xgboost_retrained.pkl")
     parser.add_argument('--params', type=str, help='JSON string of hyperparameters for retraining')
 
     args = parser.parse_args()
@@ -57,8 +58,8 @@ def main():
             return
 
         print("Retraining model with new hyperparameters...")
-        model, best_params, evaluation_metrics = retrain_model(X_train, X_test, y_train, y_test, hyperparameters, args.model_path)
-        save_model(model, args.model_path)
+        model, best_params, evaluation_metrics = retrain_model(X_train, X_test, y_train, y_test, hyperparameters, args.retrained_model_path)
+        save_model(model, args.retrained_model_path)
         print("Model retraining completed and saved.")
         
     if not model:

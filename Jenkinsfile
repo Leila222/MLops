@@ -6,7 +6,7 @@ pipeline {
         TRAIN_PATH = "data/train.csv"
         TEST_PATH = "data/test.csv"
         MODEL_PATH = "models/xgboost_model.pkl"
-        MODEL_PATH_Retrain = "models/xgboost_retrained.pkl"
+        RETRAINED_MODEL_PATH = "models/xgboost_retrained.pkl"
     }
 
     parameters {
@@ -69,23 +69,19 @@ pipeline {
             }
         }
 
-        stage('Retrain Model') {
-            when {
-                expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Retrain Model' }
-            }
-            steps {
-                sh '''
-                . ${VENV_DIR}/bin/activate 
-                if [ -f ${MODEL_PATH_Retrain} ]; then
-                    echo "Existing model found, retraining..."
-                    python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH_Retrain}
-                else
-                    echo "No model found, training a new model..."
-                    python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH_Retrain}
-                fi
-                '''
-            }
-        }
+	stage('Retrain Model') {
+	    when {
+		expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Retrain Model' }
+	    }
+	    steps {
+		sh '''
+		. ${VENV_DIR}/bin/activate 
+		echo "Retraining model..."
+		python main.py --retrain --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${RETRAINED_MODEL_PATH}
+		'''
+	    }
+	}
+
         
         stage('Deploy API') {
             when {

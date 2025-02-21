@@ -238,7 +238,7 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
         "f1_score": test_f1,
     }
 
-def retrain_model(X_train, X_test, y_train, y_test, params, model_path="xgb_retrained.pkl"):
+def retrain_model(X_train, X_test, y_train, y_test, params, retrained_model_path ="xgb_retrained.pkl"):
     """
     Retrains the XGBoost model with given hyperparameters, saves it, and logs results in MLflow.
 
@@ -259,7 +259,7 @@ def retrain_model(X_train, X_test, y_train, y_test, params, model_path="xgb_retr
 
         model.fit(X_train, y_train)
 
-        joblib.dump(model, model_path)
+        save_model(model, model_path)
         print(f"Retrained model saved to {model_path}")
 
         mlflow.log_params(params)
