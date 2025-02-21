@@ -3,6 +3,7 @@ import pandas as pd
 import shap
 import mlflow
 import mlflow.sklearn
+import json
 
 from model_pipeline import (
     prepare_data,
