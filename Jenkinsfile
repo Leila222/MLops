@@ -11,6 +11,13 @@ pipeline {
 
     parameters {
         string(name: 'RUN_STAGE', defaultValue: 'ALL', description: 'Enter stage name to run a single stage or ALL to run everything')
+        string(name: 'LEARNING_RATE', defaultValue: '0.1', description: 'Learning rate for retraining the model')
+        string(name: 'MAX_DEPTH', defaultValue: '3', description: 'Max depth for the model')
+        string(name: 'N_ESTIMATORS', defaultValue: '100', description: 'Number of estimators for the model')
+        string(name: 'SUBSAMPLE', defaultValue: '1.0', description: 'Subsample ratio of the training data')
+        string(name: 'COLSAMPLE_BYTREE', defaultValue: '1.0', description: 'Subsample ratio of features')
+        string(name: 'GAMMA', defaultValue: '0', description: 'Minimum loss reduction required to make a further partition')
+        string(name: 'MIN_CHILD_WEIGHT', defaultValue: '1', description: 'Minimum sum of instance weight (hessian) for a child')
     }
 
     stages {
@@ -32,7 +39,7 @@ pipeline {
                 sh '. ${VENV_DIR}/bin/activate && pip install -r requirements.txt'
             }
         }
-        
+
         stage('Run MLflow') {
             when {
                 expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Run MLflow' }
@@ -69,20 +76,38 @@ pipeline {
             }
         }
 
-	stage('Retrain Model') {
-	    when {
-		expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Retrain Model' }
-	    }
-	    steps {
-		sh '''
-		. ${VENV_DIR}/bin/activate 
-		echo "Retraining model..."
-		python main.py --retrain --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${RETRAINED_MODEL_PATH} --params '${HYPERPARAMS}'
-		'''
-	    }
-	}
+        stage('Retrain Model') {
+            when {
+                expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Retrain Model' }
+            }
+            steps {
+                script {
+                    
+                    def learning_rate = params.LEARNING_RATE
+                    def max_depth = params.MAX_DEPTH.toInteger()
+                    def n_estimators = params.N_ESTIMATORS.toInteger()
+                    def subsample = params.SUBSAMPLE.toDouble()
+                    def colsample_bytree = params.COLSAMPLE_BYTREE.toDouble()
+                    def gamma = params.GAMMA.toDouble()
+                    def min_child_weight = params.MIN_CHILD_WEIGHT.toInteger()
+                    def retrained_model_path = "models/xgboost_retrained.pkl"
 
-        
+                    // Running the retrain command with individual hyperparameters
+                    sh """
+                        . ${VENV_DIR}/bin/activate
+                        echo "Retraining model with the following parameters:"
+                        echo "learning_rate=${learning_rate}, max_depth=${max_depth}, n_estimators=${n_estimators}, subsample=${subsample}, colsample_bytree=${colsample_bytree}, gamma=${gamma}, min_child_weight=${min_child_weight}"
+
+                        # Running the main.py with the provided hyperparameters
+                        python main.py --retrain --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${retrained_model_path} \
+                                       --learning_rate ${learning_rate} --max_depth ${max_depth} --n_estimators ${n_estimators} \
+                                       --subsample ${subsample} --colsample_bytree ${colsample_bytree} --gamma ${gamma} \
+                                       --min_child_weight ${min_child_weight}
+                    """
+                }
+            }
+        }
+
         stage('Deploy API') {
             when {
                 expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Deploy API' }
@@ -93,3 +118,4 @@ pipeline {
         }
     }
 }
+

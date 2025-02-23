@@ -31,6 +31,14 @@ def main():
     parser.add_argument('--retrained_model_path', type=str, help='Path to save/load the model', default="models/xgboost_retrained.pkl")
     parser.add_argument('--params', type=str, help='JSON string of hyperparameters for retraining')
 
+    parser.add_argument('--learning_rate', type=float, default=0.1, help='Learning rate for the model')
+    parser.add_argument('--max_depth', type=int, default=3, help='Maximum depth of the trees')
+    parser.add_argument('--n_estimators', type=int, default=100, help='Number of estimators')
+    parser.add_argument('--subsample', type=float, default=1.0, help='Subsample ratio')
+    parser.add_argument('--colsample_bytree', type=float, default=1.0, help='Column sample ratio by tree')
+    parser.add_argument('--gamma', type=float, default=0.0, help='Minimum loss reduction')
+    parser.add_argument('--min_child_weight', type=int, default=1, help='Minimum child weight')
+    
     args = parser.parse_args()
 
     print("Preparing data...")
@@ -48,18 +56,19 @@ def main():
         print("Model training completed and saved.")
 
     if args.retrain:
-        if not args.params:
-            print("Please provide hyperparameters using --params argument in JSON format.")
-            return
-
-        try:
-            hyperparameters = json.loads(args.params)
-        except json.JSONDecodeError:
-            print("Invalid JSON format for hyperparameters.")
-            return
-
         print("Retraining model with new hyperparameters...")
-        model, best_params, evaluation_metrics = retrain_model(X_train, X_test, y_train, y_test, hyperparameters, args.retrained_model_path)
+
+        model, best_params, evaluation_metrics = retrain_model(
+            X_train, X_test, y_train, y_test,
+            learning_rate=args.learning_rate,
+            max_depth=args.max_depth,
+            n_estimators=args.n_estimators,
+            subsample=args.subsample,
+            colsample_bytree=args.colsample_bytree,
+            gamma=args.gamma,
+            min_child_weight=args.min_child_weight,
+            retrained_model_path=args.retrained_model_path
+        )
         save_model(model, args.retrained_model_path)
         print("Model retraining completed and saved.")
         
