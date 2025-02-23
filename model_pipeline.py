@@ -234,7 +234,11 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
         "f1_score": test_f1,
     }
 
+<<<<<<< HEAD
 def retrain_model(X_train, X_test, y_train, y_test, params, model_path="xgb_retrained.pkl"):
+=======
+def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth=3, n_estimators=100, subsample=1.0, colsample_bytree=1.0, gamma=0, min_child_weight=1, retrained_model_path ="xgb_retrained.pkl"):
+>>>>>>> 055825c (added parameters for retraining)
     """
     Retrains the XGBoost model with given hyperparameters, saves it, and logs results in MLflow.
 
@@ -249,7 +253,21 @@ def retrain_model(X_train, X_test, y_train, y_test, params, model_path="xgb_retr
     Returns:
         tuple: (Trained model, best parameters, evaluation metrics)
     """
+    if X_train is None or X_test is None or y_train is None or y_test is None:
+        print("No prepared data, please run the stage of prepare")
+        return None, None, None  # Return early if no data is provided
 
+    params = {
+        'learning_rate': learning_rate,
+        'max_depth': max_depth,
+        'n_estimators': n_estimators,
+        'subsample': subsample,
+        'colsample_bytree': colsample_bytree,
+        'gamma': gamma,
+        'min_child_weight': min_child_weight,
+        'random_state': 42
+    }
+    
     with mlflow.start_run(run_name="Retraining the model"):
         model = xgb.XGBClassifier(**params, random_state=42)
 

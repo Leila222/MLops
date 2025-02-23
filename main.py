@@ -47,16 +47,6 @@ def main():
         print("Model training completed and saved.")
 
     if args.retrain:
-        if not args.params:
-            print("Please provide hyperparameters using --params argument in JSON format.")
-            return
-
-        try:
-            hyperparameters = json.loads(args.params)
-        except json.JSONDecodeError:
-            print("Invalid JSON format for hyperparameters.")
-            return
-
         print("Retraining model with new hyperparameters...")
         model, best_params, evaluation_metrics = retrain_model(X_train, X_test, y_train, y_test, hyperparameters, args.model_path)
         save_model(model, args.model_path)
