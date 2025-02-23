@@ -57,6 +57,7 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto">
                         <a href="{{ url_for('home') }}" class="nav-item nav-link">Home</a>
+                        <a href="{{ url_for('xgbretrain') }}" class="nav-item nav-link">Retrain model</a>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle active" data-bs-toggle="dropdown">Models</a>
                             <div class="dropdown-menu bg-light mt-2">
@@ -176,6 +177,17 @@
                                 </div>
                             </div>
 
+<!-- Model Selection Dropdown -->
+<div class="col-md-6">
+    <div class="form-floating">
+        <select class="form-select" id="model_selector" name="model_selector" required>
+            <option value="xgboost">XGBoost</option>
+            <option value="xgboost1">XGBoost Personalized</option>  
+        </select>
+        <label for="model_selector">Choose Model</label>
+    </div>
+</div>
+
                             <!-- Submit Button -->
                             <div class="col-12">
                                 <button class="btn btn-primary w-100 py-3" type="submit">Predict</button>
@@ -189,29 +201,32 @@
 </div>
 
 <script>
-    // Bind the form submission using AJAX
     document.getElementById("predictionForm").addEventListener("submit", function(event) {
-        event.preventDefault();  
+    event.preventDefault();  
 
-        var formData = new FormData(this);  
+    var formData = new FormData(this);  
 
-        fetch('/predict', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json()) 
-        .then(data => {
-            Swal.fire({
-                title: data.result,
-                icon: data.result.includes("not churn") ? 'success' : 'warning',
-                confirmButtonText: 'OK'
-            });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire('Oops!', 'Something went wrong!', 'error');
+    // Include the selected model in the form data
+    var selectedModel = document.getElementById("model_selector").value;
+    formData.append("model_selector", selectedModel);
+
+    fetch('/predict', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json()) 
+    .then(data => {
+        Swal.fire({
+            title: data.result,
+            icon: data.result.includes("not churn") ? 'success' : 'warning',
+            confirmButtonText: 'OK'
         });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Oops!', 'Something went wrong!', 'error');
     });
+});
 </script>
 
 
