@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>ML.Tech - Churn Prediction</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="{{ url_for('static', filename='img/logo.png') }}" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Ubuntu:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{{ url_for('static', filename='lib/animate/animate.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <!-- Spinner Start -->
+    <div id="spinner"
+        class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <!-- Spinner End -->
+
+
+    <!-- Navbar Start -->
+    <div class="container-fluid sticky-top">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-dark p-0">
+                <a href="#" class="navbar-brand">
+                    <h1 class="text-white">AI<span class="text-dark">.</span>Tech</h1>
+                </a>
+                <button type="button" class="navbar-toggler ms-auto me-0" data-bs-toggle="collapse"
+                    data-bs-target="#navbarCollapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <div class="navbar-nav ms-auto">
+                        <a href="{{ url_for('home') }}" class="nav-item nav-link">Home</a>
+                        <a href="#" class="nav-item nav-link active">Retrain model</a>
+                        <div class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Models</a>
+                            <div class="dropdown-menu bg-light mt-2">
+                                <a href="{{ url_for('xgb_open') }}" class="dropdown-item">XGBoost</a>
+                                
+                            </div>
+                        </div>
+                        <a href="{{ url_for('team') }}" class="nav-item nav-link">Team</a>
+                    </div>
+                    <butaton type="button" class="btn text-white p-0 d-none d-lg-block" data-bs-toggle="modal"
+                        data-bs-target="#searchModal"><i class="fa fa-search"></i></butaton>
+                </div>
+            </nav>
+        </div>
+    </div>
+    <!-- Navbar End -->
+
+
+    <!-- Hero Start -->
+    <div class="container-fluid pt-5 bg-primary hero-header">
+        <div class="container pt-5">
+            <div class="row g-5 pt-5">
+                <div class="col-lg-6 align-self-center text-center text-lg-start mb-lg-5">
+                    <h1 class="display-4 text-white mb-4 animated slideInRight">XGBoost model</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center justify-content-lg-start mb-0">
+                            <li class="breadcrumb-item text-white active" aria-current="page">DevElites</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="col-lg-6 align-self-end text-center text-lg-end">
+                    <img class="img-fluid" src="{{ url_for('static', filename='img/hero-img.png') }}" alt="Hero Image" style="max-height: 300px;">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Hero End -->
+
+   <!-- Form -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="mx-auto text-center wow fadeIn" data-wow-delay="0.1s" style="max-width: 500px;">
+            <div class="btn btn-sm border rounded-pill text-primary px-3 mb-3">XGBoost Model</div>
+            <h1 class="mb-4">Choose your XGBoost Hyperparameters!</h1>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <p class="text-center mb-4">Please fill in the form and your model will be provided within a few seconds.</p>
+                <div class="wow fadeIn" data-wow-delay="0.3s">
+        <form id="retrainForm">
+            <div class="row g-3">
+
+                <!-- Learning Rate -->
+                <div class="col-md-6">
+                <div class="form-floating">
+                <input type="number" step="0.01" class="form-control" id="learning_rate" name="learning_rate" placeholder="Learning Rate" required>
+                    <label for="learning_rate">Learning Rate</label>
+                    
+                </div> </div>
+
+                <!-- Max Depth -->
+                <div class="col-md-6">
+                <div class="form-floating">
+                <input type="number" class="form-control" id="max_depth" name="max_depth" placeholder="Max Depth" required>
+                    <label for="max_depth" >Max Depth</label>
+                    
+                </div> </div>
+
+                <!-- Number of Estimators -->
+                <div class="col-md-6">
+                <div class="form-floating">
+                <input type="number" class="form-control" id="n_estimators" name="n_estimators" placeholder="Number of Estimators" required>
+                    <label for="n_estimators">Number of Estimators</label>
+                    
+                </div> </div>
+
+                <!-- Gamma -->
+                <div class="col-md-6">
+                <div class="form-floating">
+                <input type="number" step="0.01" class="form-control" id="gamma" name="gamma" placeholder="Gamma" required>
+                    <label for="gamma">Gamma</label>
+                    
+                </div> </div>
+
+                <!-- Min Child Weight -->
+                <div class="col-md-6">
+                <div class="form-floating">
+                <input type="number" step="0.1" class="form-control" id="min_child_weight" name="min_child_weight" placeholder="Min Child Weight" required>
+                    <label for="min_child_weight">Min Child Weight</label>
+                    
+                </div> </div>
+
+                <!-- Subsample -->
+                <div class="col-md-6">
+                <div class="form-floating">
+                <input type="number" step="0.01" class="form-control" id="subsample" name="subsample" placeholder="Subsample" required>
+                    <label for="subsample">Subsample</label>
+                    
+                </div> </div>
+
+                <!-- Colsample Bytree -->
+                <div class="col-md-6">
+                <div class="form-floating">
+                <input type="number" step="0.01" class="form-control" id="colsample_bytree" name="colsample_bytree" placeholder="Colsample Bytree" required>
+                    <label for="colsample_bytree">Colsample Bytree</label>
+                    
+                </div> </div>
+
+                <!-- Submit Button -->
+                <div class="col-12">
+                    <button type="button" class="btn btn-primary w-100 py-3" id="trainModelBtn">Train Model</button>
+                </div>
+            </div>
+        </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script>
+document.getElementById("trainModelBtn").addEventListener("click", function() {
+    let formData = new FormData(document.getElementById("retrainForm"));
+    let jsonData = {};
+    formData.forEach((value, key) => jsonData[key] = value);
+
+    Swal.fire({
+        title: "Training...",
+        text: "Please wait while the model is being retrained.",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    fetch('/retrain', {
+        method: 'POST',
+        body: JSON.stringify(jsonData),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        Swal.fire({
+            title: data.success ? "Training Complete" : "Training Failed",
+            text: data.message + (data.success ? `\nAccuracy: ${data.accuracy.toFixed(5)}` : ""),
+            icon: data.success ? "success" : "error"
+        });
+    })
+    .catch(error => {
+        Swal.fire({
+            title: "Error",
+            text: "Something went wrong! " + error,
+            icon: "error"
+        });
+    });
+});
+</script>
+
+
+    <!-- Full Screen Search Start -->
+    <div class="modal fade" id="searchModal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content" style="background: rgba(20, 24, 62, 0.7);">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn btn-square bg-white btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex align-items-center justify-content-center">
+                    <div class="input-group" style="max-width: 600px;">
+                        <input type="text" class="form-control bg-transparent border-light p-3"
+                            placeholder="Type search keyword">
+                        <button class="btn btn-light px-4"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Full Screen Search End -->
+
+
+
+
+
+    <!-- Newsletter Start -->
+    <div class="container-fluid bg-primary newsletter py-5">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-md-5 ps-lg-0 pt-5 pt-md-0 text-start wow fadeIn" data-wow-delay="0.3s">
+                    <img class="img-fluid" src="{{ url_for('static', filename='img/newsletter.png') }}" alt="">
+                </div>
+                <div class="col-md-7 py-5 newsletter-text wow fadeIn" data-wow-delay="0.5s">
+                    <div class="btn btn-sm border rounded-pill text-white px-3 mb-3">Newsletter</div>
+                    <h1 class="text-white mb-4">Let's subscribe the newsletter</h1>
+                    <div class="position-relative w-100 mt-3 mb-2">
+                        <input class="form-control border-0 rounded-pill w-100 ps-4 pe-5" type="text"
+                            placeholder="Enter Your Email" style="height: 48px;">
+                        <button type="button" class="btn shadow-none position-absolute top-0 end-0 mt-1 me-2"><i
+                                class="fa fa-paper-plane text-primary fs-4"></i></button>
+                    </div>
+                    <small class="text-white-50">Don't miss out on our next Deep Learning project!</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Newsletter End -->
+
+
+    <!-- Footer Start -->
+    <div class="container-fluid bg-dark text-white-50 footer pt-5">
+        <div class="container py-5">
+            <div class="row g-5">
+                <div class="col-md-6 col-lg-3 wow fadeIn" data-wow-delay="0.1s">
+                    <a href="#" class="d-inline-block mb-3">
+                        <h1 class="text-white">AI<span class="text-primary">.</span>Tech</h1>
+                    </a>
+                    <p class="mb-0">DevElites is a team of passionate data scientists dedicated to providing innovative solutions and driving impactful insights.</p>
+
+                </div>
+                <div class="col-md-6 col-lg-3 wow fadeIn" data-wow-delay="0.3s">
+                    <h5 class="text-white mb-4">Get In Touch</h5>
+                    <p><i class="fa fa-map-marker-alt me-3"></i>Technological Pole Ghazela, TN</p>
+                    <p><i class="fa fa-envelope me-3"></i>devElites@esprit.tn</p>
+                    <div class="d-flex pt-2">
+                        <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-twitter"></i></a>
+                        <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-youtube"></i></a>
+                        <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-instagram"></i></a>
+                        <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 wow fadeIn" data-wow-delay="0.5s">
+                    <h5 class="text-white mb-4">Popular Link</h5>
+                    <a class="btn btn-link" href="">About Us</a>
+                    <a class="btn btn-link" href="">Contact Us</a>
+                    <a class="btn btn-link" href="">Privacy Policy</a>
+                    <a class="btn btn-link" href="">Terms & Condition</a>
+                </div>
+                <div class="col-md-6 col-lg-3 wow fadeIn" data-wow-delay="0.7s">
+                    <h5 class="text-white mb-4">Our Services</h5>
+                    <a class="btn btn-link" href="">Machine Learning</a>
+                    <a class="btn btn-link" href="">Deep Learning</a>
+                    <a class="btn btn-link" href="">Predictive Analysis</a>
+                    <a class="btn btn-link" href="">Data Science</a>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <!-- Footer End -->
+
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top pt-2"><i class="bi bi-arrow-up"></i></a>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='lib/wow/wow.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/counterup/counterup.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
+
+    <!-- Template Javascript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
