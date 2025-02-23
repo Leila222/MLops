@@ -264,8 +264,7 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         'subsample': subsample,
         'colsample_bytree': colsample_bytree,
         'gamma': gamma,
-        'min_child_weight': min_child_weight,
-        'random_state': 42
+        'min_child_weight': min_child_weight
     }
     
     with mlflow.start_run(run_name="Retraining the model"):
