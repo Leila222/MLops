@@ -30,6 +30,31 @@ pipeline {
             }
         }
 
+        stage('Code Quality & Security') {
+            when {
+                expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Code Quality & Security' }
+            }
+            steps {
+                script {
+                    echo 'Running Code Quality Checks...'
+
+                    sh 'pylint --fail-under=7 $(git ls-files "*.py")'
+
+                    sh 'flake8 --max-line-length=100'
+
+                    sh 'mypy . --ignore-missing-imports'
+
+                    sh 'black --check .'
+
+                    sh 'bandit -r .'
+
+                    withSonarQubeEnv('SonarQubeServer') {
+                        sh 'sonar-scanner'
+                    }
+                }
+            }
+        }
+
         stage('Set up Environment') {
             when {
                 expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Set up Environment' }
