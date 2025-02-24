@@ -181,6 +181,7 @@ def train_model(X_train_st, y_train):
     }
 
     with mlflow.start_run(run_name="Training the model"):
+        run_id = run.info.run_id
         start_time = time.time()          
         mlflow.log_metric("cpu_usage_percent", psutil.cpu_percent())
         mlflow.log_metric("memory_usage_percent", psutil.virtual_memory().percent)
