@@ -48,15 +48,15 @@ pipeline {
                 script {
                     echo 'Running Code Quality Checks...'
 
-                    sh 'pylint --fail-under=7 $(git ls-files "*.py")'
+                    sh '. ${VENV_DIR}/bin/activate pylint --fail-under=7 $(git ls-files "*.py")'
 
-                    sh 'flake8 --max-line-length=100'
+                    sh '. ${VENV_DIR}/bin/activate flake8 --max-line-length=100'
 
-                    sh 'mypy . --ignore-missing-imports'
+                    sh '. ${VENV_DIR}/bin/activate mypy . --ignore-missing-imports'
 
-                    sh 'black --check .'
+                    sh '. ${VENV_DIR}/bin/activate black --check .'
 
-                    sh 'bandit -r .'
+                    sh '. ${VENV_DIR}/bin/activate bandit -r .'
                 }
             }
         }
