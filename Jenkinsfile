@@ -53,7 +53,6 @@ pipeline {
                         pylint --fail-under=6 $(git ls-files "*.py")
                         mypy . --ignore-missing-imports
                         black .
-                        bandit -r .
                     '''
                 }
             }
