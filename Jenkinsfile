@@ -30,6 +30,16 @@ pipeline {
             }
         }
 
+        stage('Set up Environment') {
+            when {
+                expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Set up Environment' }
+            }
+            steps {
+                sh 'python3 -m venv ${VENV_DIR}'
+                sh '. ${VENV_DIR}/bin/activate && pip install -r requirements.txt'
+            }
+        }
+
         stage('Code Quality & Security') {
             when {
                 expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Code Quality & Security' }
@@ -54,17 +64,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Set up Environment') {
-            when {
-                expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Set up Environment' }
-            }
-            steps {
-                sh 'python3 -m venv ${VENV_DIR}'
-                sh '. ${VENV_DIR}/bin/activate && pip install -r requirements.txt'
-            }
-        }
-
         stage('Run MLflow') {
             when {
                 expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Run MLflow' }
