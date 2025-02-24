@@ -10,13 +10,14 @@ import time
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
-    classification_report,
     accuracy_score,
     precision_score,
     recall_score,
     f1_score,
     confusion_matrix,
-    ConfusionMatrixDisplay,
+    roc_curve,
+    auc,
+    precision_recall_curve
 )
 from sklearn.metrics import (
     roc_curve,
@@ -229,11 +230,44 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
     test_recall = recall_score(y_test, y_test_pred, average="binary")
     test_f1 = f1_score(y_test, y_test_pred, average="binary")
 
-    with mlflow.start_run(run_name="Evaluating the model"):
+    with mlflow.start_run(run_name="Evaluating the model", log_system_metrics=True) as run1:
+        run_id = run1.info.run_id
         mlflow.log_metric("accuracy", test_accuracy)
         mlflow.log_metric("precision", test_precision)
         mlflow.log_metric("recall", test_recall)
         mlflow.log_metric("f1_score", test_f1)
+        cm = confusion_matrix(y_test, y_test_pred)
+        plt.figure(figsize=(6, 5))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=["Negative", "Positive"], yticklabels=["Negative", "Positive"])
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        plt.title("Confusion Matrix")
+        cm_path = "confusion_matrix.png"
+        plt.savefig(cm_path)
+        mlflow.log_artifact(cm_path)
+        
+        fpr, tpr, _ = roc_curve(y_test, y_test_prob)
+        roc_auc = auc(fpr, tpr)
+        plt.figure()
+        plt.plot(fpr, tpr, color="blue", lw=2, label=f"ROC curve (area = {roc_auc:.2f})")
+        plt.plot([0, 1], [0, 1], color="gray", linestyle="--")
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.title("Receiver Operating Characteristic (ROC)")
+        plt.legend(loc="lower right")
+        roc_path = "roc_curve.png"
+        plt.savefig(roc_path)
+        mlflow.log_artifact(roc_path)
+        mlflow.log_metric("roc_auc", roc_auc)
+        precision, recall, _ = precision_recall_curve(y_test, y_test_prob)
+        plt.figure()
+        plt.plot(recall, precision, color="purple", lw=2)
+        plt.xlabel("Recall")
+        plt.ylabel("Precision")
+        plt.title("Precision-Recall Curve")
+        pr_path = "precision_recall_curve.png"
+        plt.savefig(pr_path)
+        mlflow.log_artifact(pr_path)
         
     print("\nTest Metrics for XGBoost After Tuning:")
     print(f"Accuracy: {test_accuracy:.5f}")
@@ -278,7 +312,8 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         'min_child_weight': min_child_weight
     }
     
-    with mlflow.start_run(run_name="Retraining the model"):
+    with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run2:
+        run_id = run2.info.run_id
         model = xgb.XGBClassifier(**params, random_state=42)
 
         model.fit(X_train, y_train)
@@ -305,7 +340,15 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         for metric, value in metrics.items():
             print(f"{metric.capitalize()}: {value:.5f}")
 
-        print("Retraining and evaluation completed successfully!")
+	model_uri = f"runs:/{run2.info.run_id}/model"
+        mlflow.sklearn.log_model(tuned_xgb_model, "model")
+
+        print("Reraining phase of the model executed successfully!")
+    
+        model_name = "XGBoost_Retrained"
+        mlflow.register_model(model_uri, model_name)
+
+        print(f"Model trained and registered as '{model_name}' in MLflow Model Registry.")
 
     return model, params, metrics
     
