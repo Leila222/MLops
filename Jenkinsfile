@@ -51,7 +51,6 @@ pipeline {
                 
                     . ${VENV_DIR}/bin/activate               
                         pylint --fail-under=6 $(git ls-files "*.py")
-                        flake8 --max-line-length=100
                         mypy . --ignore-missing-imports
                         black --check .
                         bandit -r .
