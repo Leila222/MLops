@@ -337,7 +337,7 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         mlflow.log_metrics(metrics)
 
         model_uri = f"runs:/{run2.info.run_id}/model"
-        mlflow.sklearn.log_model(tuned_xgb_model, "model")
+        mlflow.sklearn.log_model(model, "model")
 
         print("Reraining phase of the model executed successfully!")
     
