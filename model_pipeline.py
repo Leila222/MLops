@@ -178,6 +178,10 @@ def train_model(X_train_st, y_train):
     }
 
     with mlflow.start_run(run_name="Training the model"):
+        start_time = time.time()          
+        mlflow.log_metric("cpu_usage_percent", psutil.cpu_percent())
+        mlflow.log_metric("memory_usage_percent", psutil.virtual_memory().percent)
+        
         xgb_model = xgb.XGBClassifier(random_state=42)
 
         random_search = RandomizedSearchCV(
@@ -199,11 +203,20 @@ def train_model(X_train_st, y_train):
 
     tuned_xgb_model.fit(X_train_st, y_train)
     
+    train_time = time.time() - start_time
+    mlflow.log_metric("training_time_seconds", train_time)
+    
     mlflow.log_params(best_params_random)
 
+    model_uri = f"runs:/{run.info.run_id}/model"
     mlflow.sklearn.log_model(tuned_xgb_model, "model")
 
     print("Training phase of the model executed successfully!")
+    
+    model_name = "XGBoost_Classifier"
+    mlflow.register_model(model_uri, model_name)
+
+    print(f"Model trained and registered as '{model_name}' in MLflow Model Registry.")
 
     return tuned_xgb_model, best_params_random
 
