@@ -246,7 +246,7 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
         plt.savefig(cm_path)
         mlflow.log_artifact(cm_path)
         
-        fpr, tpr, _ = roc_curve(y_test, y_test_predict
+        fpr, tpr, _ = roc_curve(y_test, y_test_predict)
         roc_auc = auc(fpr, tpr)
         plt.figure()
         plt.plot(fpr, tpr, color="blue", lw=2, label=f"ROC curve (area = {roc_auc:.2f})")
