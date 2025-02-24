@@ -180,12 +180,9 @@ def train_model(X_train_st, y_train):
         "min_child_weight": [1, 3, 5],
     }
 
-    with mlflow.start_run(run_name="Training the model") as run:
+    with mlflow.start_run(run_name="Training the model", log_system_metrics=True) as run:
         run_id = run.info.run_id
-        start_time = time.time()          
-        mlflow.log_metric("cpu_usage_percent", psutil.cpu_percent())
-        mlflow.log_metric("memory_usage_percent", psutil.virtual_memory().percent)
-        
+            
         xgb_model = xgb.XGBClassifier(random_state=42)
 
         random_search = RandomizedSearchCV(
@@ -206,9 +203,6 @@ def train_model(X_train_st, y_train):
         tuned_xgb_model = xgb.XGBClassifier(**best_params_random, random_state=42)
 
         tuned_xgb_model.fit(X_train_st, y_train)
-    
-        train_time = time.time() - start_time
-        mlflow.log_metric("training_time_seconds", train_time)
     
         mlflow.log_params(best_params_random)
 
