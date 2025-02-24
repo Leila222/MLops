@@ -259,7 +259,7 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
         plt.savefig(roc_path)
         mlflow.log_artifact(roc_path)
         mlflow.log_metric("roc_auc", roc_auc)
-        precision, recall, _ = precision_recall_curve(y_test, y_test_prob)
+        precision, recall, _ = precision_recall_curve(y_test, y_test_pred)
         plt.figure()
         plt.plot(recall, precision, color="purple", lw=2)
         plt.xlabel("Recall")
