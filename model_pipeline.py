@@ -180,7 +180,7 @@ def train_model(X_train_st, y_train):
         "min_child_weight": [1, 3, 5],
     }
 
-    with mlflow.start_run(run_name="Training the model"):
+    with mlflow.start_run(run_name="Training the model") as run:
         run_id = run.info.run_id
         start_time = time.time()          
         mlflow.log_metric("cpu_usage_percent", psutil.cpu_percent())
