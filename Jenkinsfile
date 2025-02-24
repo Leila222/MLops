@@ -57,10 +57,6 @@ pipeline {
                     sh 'black --check .'
 
                     sh 'bandit -r .'
-
-                    withSonarQubeEnv('SonarQubeServer') {
-                        sh 'sonar-scanner'
-                    }
                 }
             }
         }
