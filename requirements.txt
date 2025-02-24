@@ -14,3 +14,7 @@ black
 flake8
 bandit
 flask
+pylint
+mypy
+sonarqube-scanner
+
