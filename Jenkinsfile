@@ -53,6 +53,8 @@ pipeline {
                         pylint --fail-under=6 $(git ls-files "*.py")
                         mypy . --ignore-missing-imports
                         black .
+                        bandit main.py model_pipeline.py
+                        flake8 main.py model_pipeline.py
                     '''
                 }
             }
@@ -110,13 +112,13 @@ pipeline {
                     def min_child_weight = params.MIN_CHILD_WEIGHT.toInteger()
                     def retrained_model_path = "models/xgboost_retrained.pkl"
 
-                    // Running the retrain command with individual hyperparameters
+
                     sh """
                         . ${VENV_DIR}/bin/activate
                         echo "Retraining model with the following parameters:"
                         echo "learning_rate=${learning_rate}, max_depth=${max_depth}, n_estimators=${n_estimators}, subsample=${subsample}, colsample_bytree=${colsample_bytree}, gamma=${gamma}, min_child_weight=${min_child_weight}"
 
-                        # Running the main.py with the provided hyperparameters
+                       
                         python main.py --retrain --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${retrained_model_path} \
                                        --learning_rate ${learning_rate} --max_depth ${max_depth} --n_estimators ${n_estimators} \
                                        --subsample ${subsample} --colsample_bytree ${colsample_bytree} --gamma ${gamma} \
