@@ -285,7 +285,12 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         'random_state': 42
     }
     
+<<<<<<< HEAD
     with mlflow.start_run(run_name="Retraining the model"):
+=======
+    with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run:
+        run_id = run.info.run_id
+>>>>>>> 144c6e4 (log system's information)
         model = xgb.XGBClassifier(**params, random_state=42)
 
         model.fit(X_train, y_train)
@@ -308,6 +313,23 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
 
         mlflow.log_metrics(metrics)
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        model_uri = f"runs:/{run2.info.run_id}/model"
+        mlflow.sklearn.log_model(tuned_xgb_model, "model")
+=======
+        model_uri = f"runs:/{run.info.run_id}/model"
+        mlflow.sklearn.log_model(model, "model")
+>>>>>>> 45daa6a (log system)
+
+        print("Reraining phase of the model executed successfully!")
+    
+        model_name = "XGBoost_Retrained"
+        mlflow.register_model(model_uri, model_name)
+
+        print(f"Model retrained and registered as '{model_name}' in MLflow Model Registry.")
+>>>>>>> 144c6e4 (log system's information)
         print("\nEvaluation Metrics for Retrained Model:")
         for metric, value in metrics.items():
             print(f"{metric.capitalize()}: {value:.5f}")
