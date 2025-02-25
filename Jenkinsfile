@@ -82,7 +82,7 @@ pipeline {
             }
             steps {
                 sh '. ${VENV_DIR}/bin/activate && python main.py --train --train_path ${TRAIN_PATH} --test_path ${TEST_PATH} --model_path ${MODEL_PATH}'
-                sh "powershell.exe Start-ScheduledTask -TaskName 'Jenkins_Notification'"
+                sh '/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe Start-ScheduledTask -TaskName Jenkins_Notification'
             }
         }
 
