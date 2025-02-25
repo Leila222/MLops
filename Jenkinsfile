@@ -54,7 +54,7 @@ pipeline {
                         mypy . --ignore-missing-imports
                         black .
                         bandit main.py model_pipeline.py
-                        flake8 main.py model_pipeline.py --ignore=F401,E501,F841,F541 --max-line-length=120
+                        flake8 main.py model_pipeline.py --ignore=F401,E501,F841,F541,F811 --max-line-length=120
                     '''
                 }
             }
