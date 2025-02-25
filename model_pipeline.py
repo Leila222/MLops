@@ -231,7 +231,8 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
     test_f1 = f1_score(y_test, y_test_pred, average="binary")
 
     with mlflow.start_run(run_name="Evaluating the model", log_system_metrics=True) as run1:
-        run_id = run1.info.run_id
+        run_id1 = run1.info.run_id1
+        
         mlflow.log_metric("accuracy", test_accuracy)
         mlflow.log_metric("precision", test_precision)
         mlflow.log_metric("recall", test_recall)
@@ -313,7 +314,7 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
     }
     
     with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run2:
-        run_id = run2.info.run_id
+        run_id2 = run2.info.run_id2
         model = xgb.XGBClassifier(**params, random_state=42)
 
         model.fit(X_train, y_train)
