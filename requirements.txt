@@ -16,3 +16,5 @@ bandit
 flask
 pylint
 mypy
+plyer
+elasticsearch 
