@@ -4,8 +4,14 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import mlflow
+<<<<<<< HEAD
+=======
+import psutil  
+import time
+from elasticsearch import Elasticsearch
+
+>>>>>>> 471c58c (added elastic search)
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     classification_report,
     accuracy_score,
@@ -252,8 +258,31 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 def retrain_model(X_train, X_test, y_train, y_test, params, model_path="xgb_retrained.pkl"):
 =======
+=======
+es = Elasticsearch(["http://localhost:9200"]) 
+index_name = "mlflow_logs" 
+
+class ElasticsearchHandler(logging.Handler):
+    def __init__(self, es_client, index_name):
+        super().__init__()
+        self.es = es_client
+        self.index_name = index_name
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.es.index(index=self.index_name, document={"log": log_entry})
+
+es_handler = ElasticsearchHandler(es, index_name)
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+es_handler.setFormatter(formatter)
+
+logging.getLogger().addHandler(es_handler)
+logging.getLogger().setLevel(logging.INFO)
+
+>>>>>>> 471c58c (added elastic search)
 def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth=3, n_estimators=100, subsample=1.0, colsample_bytree=1.0, gamma=0, min_child_weight=1, retrained_model_path ="xgb_retrained.pkl"):
 >>>>>>> 055825c (added parameters for retraining)
     """
