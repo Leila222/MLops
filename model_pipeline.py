@@ -8,6 +8,11 @@ import mlflow
 =======
 import psutil  
 import time
+<<<<<<< HEAD
+=======
+import datetime 
+import json
+>>>>>>> bad1a52 (heyyy)
 from elasticsearch import Elasticsearch
 
 >>>>>>> 471c58c (added elastic search)
@@ -260,11 +265,14 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 def retrain_model(X_train, X_test, y_train, y_test, params, model_path="xgb_retrained.pkl"):
 =======
 =======
 es = Elasticsearch(["http://localhost:9200"]) 
 =======
+=======
+>>>>>>> 5aade7e (corrected code in model_pipleine)
 es = Elasticsearch(["http://localhost:5601"]) 
 >>>>>>> 20f6dda (added kibana to visualize data)
 index_name = "mlflow_logs" 
@@ -274,6 +282,21 @@ class ElasticsearchHandler(logging.Handler):
         super().__init__()
         self.es = es_client
         self.index_name = index_name
+=======
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+def init_elasticsearch():
+    try:
+        es = Elasticsearch(['http://localhost:9200'])  # Ensure this matches your setup
+        info = es.info()
+        logger.info(f"Connected to Elasticsearch: {info['name']} (version: {info['version']['number']})")
+        return es
+    except Exception as e:
+        logger.error(f"Error connecting to Elasticsearch: {str(e)}")
+        return None
+>>>>>>> bad1a52 (heyyy)
 
     def emit(self, record):
         log_entry = self.format(record)
@@ -286,7 +309,31 @@ es_handler.setFormatter(formatter)
 logging.getLogger().addHandler(es_handler)
 logging.getLogger().setLevel(logging.INFO)
 
+<<<<<<< HEAD
 >>>>>>> 471c58c (added elastic search)
+=======
+def log_to_elasticsearch(es, run_id, metrics, params, artifacts=None):
+    if es is None:
+        logger.warning("Elasticsearch connection not available. Skipping log_to_elasticsearch.")
+        return
+
+    timestamp = datetime.datetime.now().isoformat()
+    doc = {
+        "timestamp": timestamp,
+        "run_id": run_id,
+        "metrics": metrics,
+        "params": params,
+        "artifacts": artifacts or []
+    }
+
+    try:
+        logger.info(f"Sending document to Elasticsearch: {json.dumps(doc, default=str)[:200]}...")
+        res = es.index(index="mlflow-logs", document=doc)
+        logger.info(f"Log indexed to Elasticsearch: {res['result']} (index: {res['_index']}, id: {res['_id']})")
+    except Exception as e:
+        logger.error(f"Error indexing to Elasticsearch: {str(e)}")
+        
+>>>>>>> 5aade7e (corrected code in model_pipleine)
 def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth=3, n_estimators=100, subsample=1.0, colsample_bytree=1.0, gamma=0, min_child_weight=1, retrained_model_path ="xgb_retrained.pkl"):
 >>>>>>> 055825c (added parameters for retraining)
     """
@@ -319,11 +366,31 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
     }
     
 <<<<<<< HEAD
+<<<<<<< HEAD
     with mlflow.start_run(run_name="Retraining the model"):
 =======
     with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run:
         run_id = run.info.run_id
 >>>>>>> 144c6e4 (log system's information)
+=======
+    with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run:
+        run_id = run.info.run_id
+=======
+<<<<<<< HEAD
+    with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run2:
+<<<<<<< HEAD
+        run_id = run2.info.run_id
+=======
+        run_id2 = run2.info.run_id
+=======
+    es = init_elasticsearch()
+    
+    with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run:
+        run_id = run.info.run_id
+>>>>>>> bad1a52 (heyyy)
+>>>>>>> 70481b9 (corrected code in model_pipleine)
+>>>>>>> c91d67c (corrected code in model_pipleine)
+>>>>>>> 5aade7e (corrected code in model_pipleine)
         model = xgb.XGBClassifier(**params, random_state=42)
 
         model.fit(X_train, y_train)
@@ -356,11 +423,24 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         mlflow.sklearn.log_model(model, "model")
 >>>>>>> 45daa6a (log system)
 
+        logger.info("Retraining phase of the model executed successfully!")
+        
         print("Reraining phase of the model executed successfully!")
     
         model_name = "XGBoost_Retrained"
         mlflow.register_model(model_uri, model_name)
 
+<<<<<<< HEAD
+=======
+        # Log to Elasticsearch
+        log_to_elasticsearch(es, run_id, metrics, params)
+
+        logger.info(f"Model retrained and registered as '{model_name}' in MLflow Model Registry.")
+        logger.info("\nEvaluation Metrics for Retrained Model:")
+        for metric, value in metrics.items():
+            logger.info(f"{metric.capitalize()}: {value:.5f}")
+        
+>>>>>>> bad1a52 (heyyy)
         print(f"Model retrained and registered as '{model_name}' in MLflow Model Registry.")
 >>>>>>> 144c6e4 (log system's information)
         print("\nEvaluation Metrics for Retrained Model:")
