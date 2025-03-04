@@ -259,10 +259,14 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 def retrain_model(X_train, X_test, y_train, y_test, params, model_path="xgb_retrained.pkl"):
 =======
 =======
 es = Elasticsearch(["http://localhost:9200"]) 
+=======
+es = Elasticsearch(["http://localhost:5601"]) 
+>>>>>>> 20f6dda (added kibana to visualize data)
 index_name = "mlflow_logs" 
 
 class ElasticsearchHandler(logging.Handler):
