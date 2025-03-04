@@ -7,7 +7,7 @@ import mlflow
 import psutil  
 import time
 from elasticsearch import Elasticsearch
-
+import logging
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import (
     accuracy_score,
