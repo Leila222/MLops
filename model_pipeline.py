@@ -284,7 +284,7 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
         "f1_score": test_f1,
     }
 
-es = Elasticsearch(["http://localhost:9200"]) 
+es = Elasticsearch(["http://localhost:5601"]) 
 index_name = "mlflow_logs" 
 
 class ElasticsearchHandler(logging.Handler):
