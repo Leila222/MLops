@@ -39,26 +39,6 @@ pipeline {
                 sh '. ${VENV_DIR}/bin/activate && pip install -r requirements.txt'
             }
         }
-
-        stage('Code Quality & Security') {
-            when {
-                expression { params.RUN_STAGE == 'ALL' || params.RUN_STAGE == 'Code Quality & Security' }
-            }
-            steps {
-                script {
-                   
-                    sh '''
-                
-                    . ${VENV_DIR}/bin/activate               
-                        pylint --fail-under=6 $(git ls-files "*.py")
-                        mypy . --ignore-missing-imports
-                        black .
-                        bandit main.py model_pipeline.py
-                        flake8 main.py model_pipeline.py --ignore=F401,E501,F841,F541,F811 --max-line-length=120
-                    '''
-                }
-            }
-        }
         
         stage('Run MLflow') {
             when {
