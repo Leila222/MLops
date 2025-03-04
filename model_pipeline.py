@@ -284,25 +284,23 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
         "f1_score": test_f1,
     }
 
-es = Elasticsearch(["http://localhost:5601"]) 
-index_name = "mlflow_logs" 
+from elasticsearch import Elasticsearch
 
-class ElasticsearchHandler(logging.Handler):
-    def __init__(self, es_client, index_name):
-        super().__init__()
-        self.es = es_client
-        self.index_name = index_name
+def create_es_client():
+    es = Elasticsearch([{"host": "localhost", "port": 9200}])
+    if es.ping():
+        print("Successfully connected to Elasticsearch")
+    else:
+        print("Elasticsearch connection failed!")
+    return es
+    
+import json
 
-    def emit(self, record):
-        log_entry = self.format(record)
-        self.es.index(index=self.index_name, document={"log": log_entry})
+def log_to_elasticsearch(index, doc):
+    es = create_es_client()
+    res = es.index(index=index, body=doc)
+    print(f"Log sent to Elasticsearch: {res['result']}")
 
-es_handler = ElasticsearchHandler(es, index_name)
-formatter = logging.Formatter('%(asctime)s - %(message)s')
-es_handler.setFormatter(formatter)
-
-logging.getLogger().addHandler(es_handler)
-logging.getLogger().setLevel(logging.INFO)
 
 def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth=3, n_estimators=100, subsample=1.0, colsample_bytree=1.0, gamma=0, min_child_weight=1, retrained_model_path ="xgb_retrained.pkl"):
     """
@@ -365,6 +363,14 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         model_name = "XGBoost_Retrained"
         mlflow.register_model(model_uri, model_name)
 
+        log_to_elasticsearch("mlflow_logs", {
+            "run_id": run_id,
+            "model_name": "XGBoost_Classifier",
+            "params": best_params_random,
+            "metrics": {"f1_score": random_search.best_score_},
+            "timestamp": time.time()
+        })
+        
         print(f"Model retrained and registered as '{model_name}' in MLflow Model Registry.")
         print("\nEvaluation Metrics for Retrained Model:")
         for metric, value in metrics.items():
