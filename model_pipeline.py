@@ -6,6 +6,7 @@ import statsmodels.api as sm
 import mlflow
 import psutil  
 import time
+import datetime 
 import json
 from elasticsearch import Elasticsearch
 import logging
@@ -285,21 +286,42 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
         "f1_score": test_f1,
     }
 
-def create_es_client():
-    es = Elasticsearch([{"host": "localhost", "port": 9200}])
-    if es.ping():
-        print("Successfully connected to Elasticsearch")
-    else:
-        print("Elasticsearch connection failed!")
-    return es
-    
 
-def log_to_elasticsearch(index, doc):
-    es = create_es_client()
-    res = es.index(index=index, body=doc)
-    print(f"Log sent to Elasticsearch: {res['result']}")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+def init_elasticsearch():
+    try:
+        es = Elasticsearch(['http://localhost:9200'])  # Ensure this matches your setup
+        info = es.info()
+        logger.info(f"Connected to Elasticsearch: {info['name']} (version: {info['version']['number']})")
+        return es
+    except Exception as e:
+        logger.error(f"Error connecting to Elasticsearch: {str(e)}")
+        return None
 
 
+def log_to_elasticsearch(es, run_id, metrics, params, artifacts=None):
+    if es is None:
+        logger.warning("Elasticsearch connection not available. Skipping log_to_elasticsearch.")
+        return
+
+    timestamp = datetime.datetime.now().isoformat()
+    doc = {
+        "timestamp": timestamp,
+        "run_id": run_id,
+        "metrics": metrics,
+        "params": params,
+        "artifacts": artifacts or []
+    }
+
+    try:
+        logger.info(f"Sending document to Elasticsearch: {json.dumps(doc, default=str)[:200]}...")
+        res = es.index(index="mlflow-logs", document=doc)
+        logger.info(f"Log indexed to Elasticsearch: {res['result']} (index: {res['_index']}, id: {res['_id']})")
+    except Exception as e:
+        logger.error(f"Error indexing to Elasticsearch: {str(e)}")
+        
 def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth=3, n_estimators=100, subsample=1.0, colsample_bytree=1.0, gamma=0, min_child_weight=1, retrained_model_path ="xgb_retrained.pkl"):
     """
     Retrains the XGBoost model with given hyperparameters, saves it, and logs results in MLflow.
@@ -329,6 +351,8 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         'min_child_weight': min_child_weight
     }
     
+    es = init_elasticsearch()
+    
     with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run:
         run_id = run.info.run_id
         model = xgb.XGBClassifier(**params, random_state=42)
@@ -356,18 +380,20 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         model_uri = f"runs:/{run.info.run_id}/model"
         mlflow.sklearn.log_model(model, "model")
 
+        logger.info("Retraining phase of the model executed successfully!")
+        
         print("Reraining phase of the model executed successfully!")
     
         model_name = "XGBoost_Retrained"
         mlflow.register_model(model_uri, model_name)
 
-        log_to_elasticsearch("mlflow_logs", {
-            "run_id": run_id,
-            "model_name": "XGBoost_Classifier",
-            "params": params,
-            "metrics": metrics,  
-            "timestamp": time.time()
-        })
+        # Log to Elasticsearch
+        log_to_elasticsearch(es, run_id, metrics, params)
+
+        logger.info(f"Model retrained and registered as '{model_name}' in MLflow Model Registry.")
+        logger.info("\nEvaluation Metrics for Retrained Model:")
+        for metric, value in metrics.items():
+            logger.info(f"{metric.capitalize()}: {value:.5f}")
         
         print(f"Model retrained and registered as '{model_name}' in MLflow Model Registry.")
         print("\nEvaluation Metrics for Retrained Model:")
