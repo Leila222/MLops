@@ -329,7 +329,7 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         'min_child_weight': min_child_weight
     }
     
-    with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run2:
+    with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run:
         run_id = run.info.run_id
         model = xgb.XGBClassifier(**params, random_state=42)
 
@@ -353,7 +353,7 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
 
         mlflow.log_metrics(metrics)
 
-        model_uri = f"runs:/{run2.info.run_id}/model"
+        model_uri = f"runs:/{run.info.run_id}/model"
         mlflow.sklearn.log_model(model, "model")
 
         print("Reraining phase of the model executed successfully!")
@@ -365,7 +365,7 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
             "run_id": run_id,
             "model_name": "XGBoost_Classifier",
             "params": params,
-            "metrics": metrics,  # Log all metrics here
+            "metrics": metrics,  
             "timestamp": time.time()
         })
         
