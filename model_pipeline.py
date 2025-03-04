@@ -6,6 +6,7 @@ import statsmodels.api as sm
 import mlflow
 import psutil  
 import time
+import json
 from elasticsearch import Elasticsearch
 import logging
 from sklearn.preprocessing import LabelEncoder, StandardScaler
@@ -284,8 +285,6 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
         "f1_score": test_f1,
     }
 
-from elasticsearch import Elasticsearch
-
 def create_es_client():
     es = Elasticsearch([{"host": "localhost", "port": 9200}])
     if es.ping():
@@ -294,7 +293,6 @@ def create_es_client():
         print("Elasticsearch connection failed!")
     return es
     
-import json
 
 def log_to_elasticsearch(index, doc):
     es = create_es_client()
@@ -332,7 +330,7 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
     }
     
     with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run2:
-        run_id2 = run2.info.run_id
+        run_id = run.info.run_id
         model = xgb.XGBClassifier(**params, random_state=42)
 
         model.fit(X_train, y_train)
@@ -366,8 +364,8 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         log_to_elasticsearch("mlflow_logs", {
             "run_id": run_id,
             "model_name": "XGBoost_Classifier",
-            "params": best_params_random,
-            "metrics": {"f1_score": random_search.best_score_},
+            "params": params,
+            "metrics": metrics,  # Log all metrics here
             "timestamp": time.time()
         })
         
