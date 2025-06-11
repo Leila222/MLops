@@ -4,27 +4,22 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import mlflow
-<<<<<<< HEAD
-=======
 import psutil  
 import time
-<<<<<<< HEAD
-=======
 import datetime 
 import json
->>>>>>> bad1a52 (heyyy)
 from elasticsearch import Elasticsearch
-
->>>>>>> 471c58c (added elastic search)
+import logging
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import (
-    classification_report,
     accuracy_score,
     precision_score,
     recall_score,
     f1_score,
     confusion_matrix,
-    ConfusionMatrixDisplay,
+    roc_curve,
+    auc,
+    precision_recall_curve
 )
 from sklearn.metrics import (
     roc_curve,
@@ -40,6 +35,10 @@ import joblib
 import os
 import shap
 
+
+mlflow.set_tracking_uri(uri="http://localhost:5001")
+
+mlflow.set_experiment("MLflow")
 
 def save_preprocessed_data(X_train, X_test, y_train, y_test, scaler, output_dir="data"):
     os.makedirs(output_dir, exist_ok=True)
@@ -184,7 +183,9 @@ def train_model(X_train_st, y_train):
         "min_child_weight": [1, 3, 5],
     }
 
-    with mlflow.start_run(run_name="Training the model"):
+    with mlflow.start_run(run_name="Training the model", log_system_metrics=True) as run:
+        run_id = run.info.run_id
+            
         xgb_model = xgb.XGBClassifier(random_state=42)
 
         random_search = RandomizedSearchCV(
@@ -206,16 +207,6 @@ def train_model(X_train_st, y_train):
 
         tuned_xgb_model.fit(X_train_st, y_train)
     
-<<<<<<< HEAD
-    mlflow.log_params(best_params_random)
-
-    mlflow.sklearn.log_model(tuned_xgb_model, "model")
-
-    print("Training phase of the model executed successfully!")
-=======
-        train_time = time.time() - start_time
-        mlflow.log_metric("training_time_seconds", train_time)
-    
         mlflow.log_params(best_params_random)
 
         model_uri = f"runs:/{run.info.run_id}/model"
@@ -227,7 +218,6 @@ def train_model(X_train_st, y_train):
         mlflow.register_model(model_uri, model_name)
 
         print(f"Model trained and registered as '{model_name}' in MLflow Model Registry.")
->>>>>>> 709219f (heeeyy)
 
     return tuned_xgb_model, best_params_random
 
@@ -242,11 +232,45 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
     test_recall = recall_score(y_test, y_test_pred, average="binary")
     test_f1 = f1_score(y_test, y_test_pred, average="binary")
 
-    with mlflow.start_run(run_name="Evaluating the model"):
+    with mlflow.start_run(run_name="Evaluating the model", log_system_metrics=True) as run1:
+        run_id1 = run1.info.run_id
+        
         mlflow.log_metric("accuracy", test_accuracy)
         mlflow.log_metric("precision", test_precision)
         mlflow.log_metric("recall", test_recall)
         mlflow.log_metric("f1_score", test_f1)
+        cm = confusion_matrix(y_test, y_test_pred)
+        plt.figure(figsize=(6, 5))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=["Negative", "Positive"], yticklabels=["Negative", "Positive"])
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        plt.title("Confusion Matrix")
+        cm_path = "confusion_matrix.png"
+        plt.savefig(cm_path)
+        mlflow.log_artifact(cm_path)
+        
+        fpr, tpr, _ = roc_curve(y_test, y_test_pred)
+        roc_auc = auc(fpr, tpr)
+        plt.figure()
+        plt.plot(fpr, tpr, color="blue", lw=2, label=f"ROC curve (area = {roc_auc:.2f})")
+        plt.plot([0, 1], [0, 1], color="gray", linestyle="--")
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.title("Receiver Operating Characteristic (ROC)")
+        plt.legend(loc="lower right")
+        roc_path = "roc_curve.png"
+        plt.savefig(roc_path)
+        mlflow.log_artifact(roc_path)
+        mlflow.log_metric("roc_auc", roc_auc)
+        precision, recall, _ = precision_recall_curve(y_test, y_test_pred)
+        plt.figure()
+        plt.plot(recall, precision, color="purple", lw=2)
+        plt.xlabel("Recall")
+        plt.ylabel("Precision")
+        plt.title("Precision-Recall Curve")
+        pr_path = "precision_recall_curve.png"
+        plt.savefig(pr_path)
+        mlflow.log_artifact(pr_path)
         
     print("\nTest Metrics for XGBoost After Tuning:")
     print(f"Accuracy: {test_accuracy:.5f}")
@@ -262,27 +286,6 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
         "f1_score": test_f1,
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-def retrain_model(X_train, X_test, y_train, y_test, params, model_path="xgb_retrained.pkl"):
-=======
-=======
-es = Elasticsearch(["http://localhost:9200"]) 
-=======
-=======
->>>>>>> 5aade7e (corrected code in model_pipleine)
-es = Elasticsearch(["http://localhost:5601"]) 
->>>>>>> 20f6dda (added kibana to visualize data)
-index_name = "mlflow_logs" 
-
-class ElasticsearchHandler(logging.Handler):
-    def __init__(self, es_client, index_name):
-        super().__init__()
-        self.es = es_client
-        self.index_name = index_name
-=======
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -296,22 +299,8 @@ def init_elasticsearch():
     except Exception as e:
         logger.error(f"Error connecting to Elasticsearch: {str(e)}")
         return None
->>>>>>> bad1a52 (heyyy)
 
-    def emit(self, record):
-        log_entry = self.format(record)
-        self.es.index(index=self.index_name, document={"log": log_entry})
 
-es_handler = ElasticsearchHandler(es, index_name)
-formatter = logging.Formatter('%(asctime)s - %(message)s')
-es_handler.setFormatter(formatter)
-
-logging.getLogger().addHandler(es_handler)
-logging.getLogger().setLevel(logging.INFO)
-
-<<<<<<< HEAD
->>>>>>> 471c58c (added elastic search)
-=======
 def log_to_elasticsearch(es, run_id, metrics, params, artifacts=None):
     if es is None:
         logger.warning("Elasticsearch connection not available. Skipping log_to_elasticsearch.")
@@ -333,9 +322,7 @@ def log_to_elasticsearch(es, run_id, metrics, params, artifacts=None):
     except Exception as e:
         logger.error(f"Error indexing to Elasticsearch: {str(e)}")
         
->>>>>>> 5aade7e (corrected code in model_pipleine)
 def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth=3, n_estimators=100, subsample=1.0, colsample_bytree=1.0, gamma=0, min_child_weight=1, retrained_model_path ="xgb_retrained.pkl"):
->>>>>>> 055825c (added parameters for retraining)
     """
     Retrains the XGBoost model with given hyperparameters, saves it, and logs results in MLflow.
 
@@ -361,42 +348,19 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         'subsample': subsample,
         'colsample_bytree': colsample_bytree,
         'gamma': gamma,
-        'min_child_weight': min_child_weight,
-        'random_state': 42
+        'min_child_weight': min_child_weight
     }
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-    with mlflow.start_run(run_name="Retraining the model"):
-=======
-    with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run:
-        run_id = run.info.run_id
->>>>>>> 144c6e4 (log system's information)
-=======
-    with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run:
-        run_id = run.info.run_id
-=======
-<<<<<<< HEAD
-    with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run2:
-<<<<<<< HEAD
-        run_id = run2.info.run_id
-=======
-        run_id2 = run2.info.run_id
-=======
     es = init_elasticsearch()
     
     with mlflow.start_run(run_name="Retraining the model", log_system_metrics=True) as run:
         run_id = run.info.run_id
->>>>>>> bad1a52 (heyyy)
->>>>>>> 70481b9 (corrected code in model_pipleine)
->>>>>>> c91d67c (corrected code in model_pipleine)
->>>>>>> 5aade7e (corrected code in model_pipleine)
         model = xgb.XGBClassifier(**params, random_state=42)
 
         model.fit(X_train, y_train)
 
-        joblib.dump(model, model_path)
-        print(f"Retrained model saved to {model_path}")
+        save_model(model, retrained_model_path)
+        print(f"Retrained model saved to {retrained_model_path}")
 
         mlflow.log_params(params)
         mlflow.sklearn.log_model(model, "retrained_model")
@@ -413,15 +377,8 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
 
         mlflow.log_metrics(metrics)
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-        model_uri = f"runs:/{run2.info.run_id}/model"
-        mlflow.sklearn.log_model(tuned_xgb_model, "model")
-=======
         model_uri = f"runs:/{run.info.run_id}/model"
         mlflow.sklearn.log_model(model, "model")
->>>>>>> 45daa6a (log system)
 
         logger.info("Retraining phase of the model executed successfully!")
         
@@ -430,8 +387,6 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         model_name = "XGBoost_Retrained"
         mlflow.register_model(model_uri, model_name)
 
-<<<<<<< HEAD
-=======
         # Log to Elasticsearch
         log_to_elasticsearch(es, run_id, metrics, params)
 
@@ -440,14 +395,10 @@ def retrain_model(X_train, X_test, y_train, y_test, learning_rate=0.1, max_depth
         for metric, value in metrics.items():
             logger.info(f"{metric.capitalize()}: {value:.5f}")
         
->>>>>>> bad1a52 (heyyy)
         print(f"Model retrained and registered as '{model_name}' in MLflow Model Registry.")
->>>>>>> 144c6e4 (log system's information)
         print("\nEvaluation Metrics for Retrained Model:")
         for metric, value in metrics.items():
             print(f"{metric.capitalize()}: {value:.5f}")
-
-        print("Retraining and evaluation completed successfully!")
 
     return model, params, metrics
     

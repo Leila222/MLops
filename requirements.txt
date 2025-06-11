@@ -16,5 +16,5 @@ bandit
 flask
 pylint
 mypy
-sonarqube-scanner
-
+plyer
+elasticsearch 
